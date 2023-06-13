@@ -23,18 +23,19 @@ public class CustomerDAO {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        boolean isReturning = false;
+        boolean isReturningCustomer = false;
 
         try {
             connection = dataBaseConfig.getConnection();
             preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM ticket WHERE VEHICLE_REG_NUMBER = ?");
             preparedStatement.setString(1, vehicleRegNumber);
             resultSet = preparedStatement.executeQuery();
+
             if (resultSet.next()) {
                 int count = resultSet.getInt(1);
-                isReturning = count > 1;
+                isReturningCustomer = count > 0;
             }
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (Exception e) {
             logger.error("Error checking if customer is returning", e);
         } finally {
             dataBaseConfig.closeResultSet(resultSet);
@@ -42,6 +43,6 @@ public class CustomerDAO {
             dataBaseConfig.closeConnection(connection);
         }
 
-        return isReturning;
+        return isReturningCustomer;
     }
 }

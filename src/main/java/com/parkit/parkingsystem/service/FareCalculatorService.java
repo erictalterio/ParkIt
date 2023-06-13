@@ -3,45 +3,67 @@ package com.parkit.parkingsystem.service;
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class FareCalculatorService {
 
-    public void calculateFare(Ticket ticket){
-        if( (ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime())) ){
-            throw new IllegalArgumentException("Out time provided is incorrect: " + ticket.getOutTime());
+    public void calculateFare(Ticket ticket, boolean isReturningCustomer) {
+        if (ticket.getInTime() == null || ticket.getOutTime() == null) {
+            throw new IllegalArgumentException("Invalid Ticket: InTime or OutTime is null");
         }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            Date inTime = dateFormat.parse(dateFormat.format(ticket.getInTime()));
-            Date outTime = dateFormat.parse(dateFormat.format(ticket.getOutTime()));
+        long inTimeMillis = ticket.getInTime().getTime();
+        long outTimeMillis = ticket.getOutTime().getTime();
+        long durationMillis = outTimeMillis - inTimeMillis;
 
-            long durationMillis = outTime.getTime() - inTime.getTime();
-            int durationMinutes = (int) TimeUnit.MILLISECONDS.toMinutes(durationMillis);
+        if (durationMillis <= 0) {
+            throw new IllegalArgumentException("Invalid Ticket: OutTime is before InTime");
+        }
 
-            if (durationMinutes <= 30) {
-                ticket.setPrice(0); // Set fare to 0 if duration is less than or equal to 30 minutes
-            } else {
-                long durationHours = TimeUnit.MILLISECONDS.toHours(durationMillis);
+        int durationMinutes = (int) TimeUnit.MILLISECONDS.toMinutes(durationMillis);
 
-            switch (ticket.getParkingSpot().getParkingType()){
-                case CAR: {
-                    ticket.setPrice(durationHours * Fare.CAR_RATE_PER_HOUR);
-                    break;
+        // Calculate the fare based on the parking type
+        switch (ticket.getParkingSpot().getParkingType()) {
+            case CAR: {
+                double fare = 0;
+                if (durationMinutes <= Fare.FREE_DURATION_CAR) {
+                    // Less than or equal to the free duration
+                    fare = 0;
+                } else {
+                    // Apply regular rate
+                    int billingMinutes = durationMinutes - Fare.FREE_DURATION_CAR;
+                    fare = billingMinutes * Fare.CAR_RATE_PER_MINUTE;
                 }
-                case BIKE: {
-                    ticket.setPrice(durationHours * Fare.BIKE_RATE_PER_HOUR);
-                    break;
+
+                if (isReturningCustomer) {
+                    // Apply returning customer discount
+                    fare *= Fare.RETURNING_CUSTOMER_DISCOUNT;
                 }
-                default: throw new IllegalArgumentException("Unknown Parking Type");
-                }
+
+                ticket.setPrice(fare);
+                break;
             }
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("Error parsing date: " + e.getMessage());
+            case BIKE: {
+                double fare = 0;
+                if (durationMinutes <= Fare.FREE_DURATION_BIKE) {
+                    // Less than or equal to the free duration
+                    fare = 0;
+                } else {
+                    // Apply regular rate
+                    int billingMinutes = durationMinutes - Fare.FREE_DURATION_BIKE;
+                    fare = billingMinutes * Fare.BIKE_RATE_PER_MINUTE;
+                }
+
+                if (isReturningCustomer) {
+                    // Apply returning customer discount
+                    fare *= Fare.RETURNING_CUSTOMER_DISCOUNT;
+                }
+
+                ticket.setPrice(fare);
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Unknown Parking Type");
         }
     }
 }
