@@ -1,6 +1,5 @@
 package com.parkit.parkingsystem.model;
 
-import java.util.Calendar;
 import java.util.Date;
 
 public class Ticket {
@@ -57,5 +56,9 @@ public class Ticket {
 
     public void setOutTime(Date outTime) {
         this.outTime = outTime;
+    }
+    public int getDuration() {
+        long durationInMillis = outTime.getTime() - inTime.getTime();
+        return (int) (durationInMillis / (1000 * 60)); // Convert milliseconds to minutes
     }
 }

@@ -56,7 +56,7 @@ public class ParkingService {
 
                 // Print a message based on whether it's a returning customer or not
                 if (isReturningCustomer) {
-                    System.out.println("Welcome back! You are recognized as a returning customer.");
+                    System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount");
                 } else {
                     System.out.println("Welcome! You are a new customer.");
                 }

@@ -8,6 +8,8 @@ import com.parkit.parkingsystem.service.FareCalculatorService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import com.parkit.parkingsystem.constants.Fare;
+import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -124,4 +126,41 @@ public class FareCalculatorServiceTest {
         assertEquals( (1440 * Fare.CAR_RATE_PER_MINUTE) , ticket.getPrice());
     }
 
+    @Test
+    public void calculateFare_First30MinutesFree() {
+        // Arrange
+        FareCalculatorService fareCalculatorService = new FareCalculatorService();
+        Ticket ticket = new Ticket();
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true); // Create a valid ParkingSpot
+        ticket.setParkingSpot(parkingSpot); // Assign the ParkingSpot to the Ticket
+        ticket.setInTime(new Date());
+        ticket.setOutTime(new Date(System.currentTimeMillis() + 30 * 60 * 1000)); // Adding 30 minutes
+
+        // Act
+        fareCalculatorService.calculateFare(ticket, false);
+
+        // Assert
+        assertEquals(0.0, ticket.getPrice()); // Expecting price to be 0.0 for the first 30 minutes
+    }
+    @Test
+    public void calculateFare_ReturningCustomerDiscount() {
+        // Arrange
+        FareCalculatorService fareCalculatorService = new FareCalculatorService();
+        Ticket ticket = new Ticket();
+        ticket.setInTime(new Date(System.currentTimeMillis() - 1470 * 60 * 1000)); //24 hours parking time should give 1440 minutes (+30 free minutes) * parking fare per hour
+        ticket.setOutTime(new Date());
+        boolean isReturningCustomer = true;
+
+        ParkingSpot mockParkingSpot = mock(ParkingSpot.class);
+        when(mockParkingSpot.getParkingType()).thenReturn(ParkingType.CAR); // Mocking the getParkingType() method
+
+        ticket.setParkingSpot(mockParkingSpot);
+
+        // Act
+        fareCalculatorService.calculateFare(ticket, isReturningCustomer);
+
+        // Assert
+        double expectedPrice = ((ticket.getDuration() * Fare.CAR_RATE_PER_MINUTE) - 0.75) * (Fare.RETURNING_CUSTOMER_DISCOUNT);
+        assertEquals(expectedPrice, ticket.getPrice());
+    }
 }
