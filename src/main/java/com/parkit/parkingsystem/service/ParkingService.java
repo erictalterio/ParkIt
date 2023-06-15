@@ -118,8 +118,8 @@ public class ParkingService {
             Date outTime = new Date();
             ticket.setOutTime(outTime);
 
-            // Pass the isReturningCustomer flag to calculate the fare correctly
-            fareCalculatorService.calculateFare(ticket, isReturningCustomer);
+            // Pass the isReturningCustomerOut flag to calculate the fare correctly
+            fareCalculatorService.calculateFare(ticket, customerDAO.isReturningCustomerOut(vehicleRegNumber));
 
             ticketDAO.updateTicket(ticket);
 

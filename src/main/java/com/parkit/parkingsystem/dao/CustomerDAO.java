@@ -45,4 +45,32 @@ public class CustomerDAO {
 
         return isReturningCustomer;
     }
+
+    public boolean isReturningCustomerOut(String vehicleRegNumber) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        boolean isReturningCustomerOut = false;
+
+        try {
+            connection = dataBaseConfig.getConnection();
+            preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM ticket WHERE VEHICLE_REG_NUMBER = ?");
+            preparedStatement.setString(1, vehicleRegNumber);
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                int count = resultSet.getInt(1);
+                isReturningCustomerOut = count > 1;
+            }
+        } catch (Exception e) {
+            logger.error("Error checking if customer is returning", e);
+        } finally {
+            dataBaseConfig.closeResultSet(resultSet);
+            dataBaseConfig.closePreparedStatement(preparedStatement);
+            dataBaseConfig.closeConnection(connection);
+        }
+
+        return isReturningCustomerOut;
+    }
+
 }
