@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">parking-system</a> &gt; <a href="index.source.html" class="el_package">com.parkit.parkingsystem.dao</a> &gt; <span class="el_source">CustomerDAO.java</span></div><h1>CustomerDAO.java</h1><pre class="source lang-java linenums">package com.parkit.parkingsystem.dao;
+
+import com.parkit.parkingsystem.config.DataBaseConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class CustomerDAO {
+
+<span class="fc" id="L14">    private static final Logger logger = LogManager.getLogger(&quot;CustomerDAO&quot;);</span>
+
+    private DataBaseConfig dataBaseConfig;
+
+<span class="fc" id="L18">    public CustomerDAO() {</span>
+<span class="fc" id="L19">        this.dataBaseConfig = new DataBaseConfig();</span>
+<span class="fc" id="L20">    }</span>
+
+    public boolean isReturningCustomer(String vehicleRegNumber) {
+<span class="fc" id="L23">        Connection connection = null;</span>
+<span class="fc" id="L24">        PreparedStatement preparedStatement = null;</span>
+<span class="fc" id="L25">        ResultSet resultSet = null;</span>
+<span class="fc" id="L26">        boolean isReturningCustomer = false;</span>
+
+        try {
+<span class="nc" id="L29">            connection = dataBaseConfig.getConnection();</span>
+<span class="nc" id="L30">            preparedStatement = connection.prepareStatement(&quot;SELECT COUNT(*) FROM ticket WHERE VEHICLE_REG_NUMBER = ?&quot;);</span>
+<span class="nc" id="L31">            preparedStatement.setString(1, vehicleRegNumber);</span>
+<span class="nc" id="L32">            resultSet = preparedStatement.executeQuery();</span>
+
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            if (resultSet.next()) {</span>
+<span class="nc" id="L35">                int count = resultSet.getInt(1);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">                isReturningCustomer = count &gt; 0;</span>
+            }
+<span class="fc" id="L38">        } catch (Exception e) {</span>
+<span class="fc" id="L39">            logger.error(&quot;Error checking if customer is returning&quot;, e);</span>
+        } finally {
+<span class="fc" id="L41">            dataBaseConfig.closeResultSet(resultSet);</span>
+<span class="fc" id="L42">            dataBaseConfig.closePreparedStatement(preparedStatement);</span>
+<span class="fc" id="L43">            dataBaseConfig.closeConnection(connection);</span>
+        }
+
+<span class="fc" id="L46">        return isReturningCustomer;</span>
+    }
+
+    public boolean isReturningCustomerOut(String vehicleRegNumber) {
+<span class="fc" id="L50">        Connection connection = null;</span>
+<span class="fc" id="L51">        PreparedStatement preparedStatement = null;</span>
+<span class="fc" id="L52">        ResultSet resultSet = null;</span>
+<span class="fc" id="L53">        boolean isReturningCustomerOut = false;</span>
+
+        try {
+<span class="nc" id="L56">            connection = dataBaseConfig.getConnection();</span>
+<span class="nc" id="L57">            preparedStatement = connection.prepareStatement(&quot;SELECT COUNT(*) FROM ticket WHERE VEHICLE_REG_NUMBER = ?&quot;);</span>
+<span class="nc" id="L58">            preparedStatement.setString(1, vehicleRegNumber);</span>
+<span class="nc" id="L59">            resultSet = preparedStatement.executeQuery();</span>
+
+<span class="nc bnc" id="L61" title="All 2 branches missed.">            if (resultSet.next()) {</span>
+<span class="nc" id="L62">                int count = resultSet.getInt(1);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                isReturningCustomerOut = count &gt; 1;</span>
+            }
+<span class="fc" id="L65">        } catch (Exception e) {</span>
+<span class="fc" id="L66">            logger.error(&quot;Error checking if customer is returning&quot;, e);</span>
+        } finally {
+<span class="fc" id="L68">            dataBaseConfig.closeResultSet(resultSet);</span>
+<span class="fc" id="L69">            dataBaseConfig.closePreparedStatement(preparedStatement);</span>
+<span class="fc" id="L70">            dataBaseConfig.closeConnection(connection);</span>
+        }
+
+<span class="fc" id="L73">        return isReturningCustomerOut;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

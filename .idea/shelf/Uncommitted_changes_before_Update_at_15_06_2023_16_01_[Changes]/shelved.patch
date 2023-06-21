@@ -1,0 +1,242 @@
+Index: src/main/java/com/parkit/parkingsystem/config/DataBaseConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.parkit.parkingsystem.config;\r\n\r\nimport org.apache.logging.log4j.LogManager;\r\nimport org.apache.logging.log4j.Logger;\r\n\r\nimport java.sql.*;\r\n\r\npublic class DataBaseConfig {\r\n\r\n    private static final Logger logger = LogManager.getLogger(\"DataBaseConfig\");\r\n\r\n    public Connection getConnection() throws ClassNotFoundException, SQLException {\r\n        logger.info(\"Create DB connection\");\r\n        Class.forName(\"com.mysql.cj.jdbc.Driver\");\r\n        return DriverManager.getConnection(\r\n                \"jdbc:mysql://localhost:3306/prod\",\"root\",\"rootroot\");\r\n    }\r\n\r\n    public void closeConnection(Connection con){\r\n        if(con!=null){\r\n            try {\r\n                con.close();\r\n                logger.info(\"Closing DB connection\");\r\n            } catch (SQLException e) {\r\n                logger.error(\"Error while closing connection\",e);\r\n            }\r\n        }\r\n    }\r\n\r\n    public void closePreparedStatement(PreparedStatement ps) {\r\n        if(ps!=null){\r\n            try {\r\n                ps.close();\r\n                logger.info(\"Closing Prepared Statement\");\r\n            } catch (SQLException e) {\r\n                logger.error(\"Error while closing prepared statement\",e);\r\n            }\r\n        }\r\n    }\r\n\r\n    public void closeResultSet(ResultSet rs) {\r\n        if(rs!=null){\r\n            try {\r\n                rs.close();\r\n                logger.info(\"Closing Result Set\");\r\n            } catch (SQLException e) {\r\n                logger.error(\"Error while closing result set\",e);\r\n            }\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/parkit/parkingsystem/config/DataBaseConfig.java b/src/main/java/com/parkit/parkingsystem/config/DataBaseConfig.java
+--- a/src/main/java/com/parkit/parkingsystem/config/DataBaseConfig.java	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ b/src/main/java/com/parkit/parkingsystem/config/DataBaseConfig.java	(date 1686747968410)
+@@ -13,7 +13,7 @@
+         logger.info("Create DB connection");
+         Class.forName("com.mysql.cj.jdbc.Driver");
+         return DriverManager.getConnection(
+-                "jdbc:mysql://localhost:3306/prod","root","rootroot");
++                "jdbc:mysql://localhost:3306/prod?serverTimezone=UTC","root","rootroot");
+     }
+ 
+     public void closeConnection(Connection con){
+Index: src/test/java/com/parkit/parkingsystem/FareCalculatorServiceTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.parkit.parkingsystem;\r\n\r\nimport com.parkit.parkingsystem.constants.Fare;\r\nimport com.parkit.parkingsystem.constants.ParkingType;\r\nimport com.parkit.parkingsystem.model.ParkingSpot;\r\nimport com.parkit.parkingsystem.model.Ticket;\r\nimport com.parkit.parkingsystem.service.FareCalculatorService;\r\nimport org.junit.jupiter.api.BeforeAll;\r\nimport org.junit.jupiter.api.BeforeEach;\r\nimport org.junit.jupiter.api.Test;\r\n\r\nimport static org.junit.jupiter.api.Assertions.*;\r\n\r\nimport java.util.Date;\r\n\r\npublic class FareCalculatorServiceTest {\r\n\r\n    private static FareCalculatorService fareCalculatorService;\r\n    private Ticket ticket;\r\n\r\n    @BeforeAll\r\n    private static void setUp() {\r\n        fareCalculatorService = new FareCalculatorService();\r\n    }\r\n\r\n    @BeforeEach\r\n    private void setUpPerTest() {\r\n        ticket = new Ticket();\r\n    }\r\n\r\n    @Test\r\n    public void calculateFareCar(){\r\n        Date inTime = new Date();\r\n        inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );\r\n        Date outTime = new Date();\r\n        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);\r\n\r\n        ticket.setInTime(inTime);\r\n        ticket.setOutTime(outTime);\r\n        ticket.setParkingSpot(parkingSpot);\r\n        fareCalculatorService.calculateFare(ticket, false);\r\n        assertEquals(ticket.getPrice(), Fare.CAR_RATE_PER_HOUR);\r\n    }\r\n\r\n    @Test\r\n    public void calculateFareBike(){\r\n        Date inTime = new Date();\r\n        inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );\r\n        Date outTime = new Date();\r\n        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE,false);\r\n\r\n        ticket.setInTime(inTime);\r\n        ticket.setOutTime(outTime);\r\n        ticket.setParkingSpot(parkingSpot);\r\n        fareCalculatorService.calculateFare(ticket, false);\r\n        assertEquals(ticket.getPrice(), Fare.BIKE_RATE_PER_HOUR);\r\n    }\r\n\r\n    @Test\r\n    public void calculateFareUnkownType(){\r\n        Date inTime = new Date();\r\n        inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );\r\n        Date outTime = new Date();\r\n        ParkingSpot parkingSpot = new ParkingSpot(1, null,false);\r\n\r\n        ticket.setInTime(inTime);\r\n        ticket.setOutTime(outTime);\r\n        ticket.setParkingSpot(parkingSpot);\r\n        assertThrows(NullPointerException.class, () -> fareCalculatorService.calculateFare(ticket, false));\r\n    }\r\n\r\n    @Test\r\n    public void calculateFareBikeWithFutureInTime(){\r\n        Date inTime = new Date();\r\n        inTime.setTime( System.currentTimeMillis() + (  60 * 60 * 1000) );\r\n        Date outTime = new Date();\r\n        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE,false);\r\n\r\n        ticket.setInTime(inTime);\r\n        ticket.setOutTime(outTime);\r\n        ticket.setParkingSpot(parkingSpot);\r\n        assertThrows(IllegalArgumentException.class, () -> fareCalculatorService.calculateFare(ticket, false));\r\n    }\r\n\r\n    @Test\r\n    public void calculateFareBikeWithLessThanOneHourParkingTime(){\r\n        Date inTime = new Date();\r\n        inTime.setTime( System.currentTimeMillis() - (  45 * 60 * 1000) );//45 minutes parking time should give 3/4th parking fare\r\n        Date outTime = new Date();\r\n        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE,false);\r\n\r\n        ticket.setInTime(inTime);\r\n        ticket.setOutTime(outTime);\r\n        ticket.setParkingSpot(parkingSpot);\r\n        fareCalculatorService.calculateFare(ticket, false);\r\n        assertEquals((0.75 * Fare.BIKE_RATE_PER_HOUR), ticket.getPrice() );\r\n    }\r\n\r\n    @Test\r\n    public void calculateFareCarWithLessThanOneHourParkingTime(){\r\n        Date inTime = new Date();\r\n        inTime.setTime( System.currentTimeMillis() - (  45 * 60 * 1000) );//45 minutes parking time should give 3/4th parking fare\r\n        Date outTime = new Date();\r\n        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);\r\n\r\n        ticket.setInTime(inTime);\r\n        ticket.setOutTime(outTime);\r\n        ticket.setParkingSpot(parkingSpot);\r\n        fareCalculatorService.calculateFare(ticket, false);\r\n        assertEquals( (0.75 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice());\r\n    }\r\n\r\n    @Test\r\n    public void calculateFareCarWithMoreThanADayParkingTime(){\r\n        Date inTime = new Date();\r\n        inTime.setTime( System.currentTimeMillis() - (  24 * 60 * 60 * 1000) );//24 hours parking time should give 24 * parking fare per hour\r\n        Date outTime = new Date();\r\n        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);\r\n\r\n        ticket.setInTime(inTime);\r\n        ticket.setOutTime(outTime);\r\n        ticket.setParkingSpot(parkingSpot);\r\n        fareCalculatorService.calculateFare(ticket, false);\r\n        assertEquals( (24 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice());\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/test/java/com/parkit/parkingsystem/FareCalculatorServiceTest.java b/src/test/java/com/parkit/parkingsystem/FareCalculatorServiceTest.java
+--- a/src/test/java/com/parkit/parkingsystem/FareCalculatorServiceTest.java	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ b/src/test/java/com/parkit/parkingsystem/FareCalculatorServiceTest.java	(date 1686820153822)
+@@ -39,7 +39,7 @@
+         ticket.setOutTime(outTime);
+         ticket.setParkingSpot(parkingSpot);
+         fareCalculatorService.calculateFare(ticket, false);
+-        assertEquals(ticket.getPrice(), Fare.CAR_RATE_PER_HOUR);
++        assertEquals(ticket.getPrice(), Fare.CAR_RATE_PER_MINUTE);
+     }
+ 
+     @Test
+@@ -53,7 +53,7 @@
+         ticket.setOutTime(outTime);
+         ticket.setParkingSpot(parkingSpot);
+         fareCalculatorService.calculateFare(ticket, false);
+-        assertEquals(ticket.getPrice(), Fare.BIKE_RATE_PER_HOUR);
++        assertEquals(ticket.getPrice(), Fare.BIKE_RATE_PER_MINUTE);
+     }
+ 
+     @Test
+@@ -93,7 +93,7 @@
+         ticket.setOutTime(outTime);
+         ticket.setParkingSpot(parkingSpot);
+         fareCalculatorService.calculateFare(ticket, false);
+-        assertEquals((0.75 * Fare.BIKE_RATE_PER_HOUR), ticket.getPrice() );
++        assertEquals((0.75 * Fare.BIKE_RATE_PER_MINUTE), ticket.getPrice() );
+     }
+ 
+     @Test
+@@ -107,7 +107,7 @@
+         ticket.setOutTime(outTime);
+         ticket.setParkingSpot(parkingSpot);
+         fareCalculatorService.calculateFare(ticket, false);
+-        assertEquals( (0.75 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice());
++        assertEquals( (0.75 * Fare.CAR_RATE_PER_MINUTE) , ticket.getPrice());
+     }
+ 
+     @Test
+@@ -121,7 +121,7 @@
+         ticket.setOutTime(outTime);
+         ticket.setParkingSpot(parkingSpot);
+         fareCalculatorService.calculateFare(ticket, false);
+-        assertEquals( (24 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice());
++        assertEquals( (24 * Fare.CAR_RATE_PER_MINUTE) , ticket.getPrice());
+     }
+ 
+ }
+Index: src/main/java/com/parkit/parkingsystem/service/ParkingService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.parkit.parkingsystem.service;\r\n\r\nimport com.parkit.parkingsystem.constants.ParkingType;\r\nimport com.parkit.parkingsystem.dao.ParkingSpotDAO;\r\nimport com.parkit.parkingsystem.dao.TicketDAO;\r\nimport com.parkit.parkingsystem.dao.CustomerDAO;\r\nimport com.parkit.parkingsystem.model.ParkingSpot;\r\nimport com.parkit.parkingsystem.model.Ticket;\r\nimport com.parkit.parkingsystem.util.InputReaderUtil;\r\nimport org.apache.logging.log4j.LogManager;\r\nimport org.apache.logging.log4j.Logger;\r\n\r\nimport java.util.Date;\r\n\r\npublic class ParkingService {\r\n\r\n    private static final Logger logger = LogManager.getLogger(\"ParkingService\");\r\n\r\n    private static FareCalculatorService fareCalculatorService = new FareCalculatorService();\r\n\r\n    private InputReaderUtil inputReaderUtil;\r\n    private ParkingSpotDAO parkingSpotDAO;\r\n    private TicketDAO ticketDAO;\r\n    private CustomerDAO customerDAO; // Add CustomerDAO instance\r\n\r\n    public ParkingService(InputReaderUtil inputReaderUtil, ParkingSpotDAO parkingSpotDAO, TicketDAO ticketDAO) {\r\n        this.inputReaderUtil = inputReaderUtil;\r\n        this.parkingSpotDAO = parkingSpotDAO;\r\n        this.ticketDAO = ticketDAO;\r\n        this.customerDAO = new CustomerDAO(); // Instantiate CustomerDAO\r\n    }\r\n\r\n    public void processIncomingVehicle() {\r\n        try {\r\n            ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();\r\n            if (parkingSpot != null && parkingSpot.getId() > 0) {\r\n                String vehicleRegNumber = getVehichleRegNumber();\r\n                parkingSpot.setAvailable(false);\r\n                parkingSpotDAO.updateParking(parkingSpot);\r\n\r\n                // Check if the customer is a returning customer\r\n                boolean isReturningCustomer = customerDAO.isReturningCustomer(vehicleRegNumber);\r\n\r\n                Date inTime = new Date();\r\n                Ticket ticket = new Ticket();\r\n                ticket.setParkingSpot(parkingSpot);\r\n                ticket.setVehicleRegNumber(vehicleRegNumber);\r\n                ticket.setPrice(0);\r\n                ticket.setInTime(inTime);\r\n                ticket.setOutTime(null);\r\n                ticketDAO.saveTicket(ticket);\r\n\r\n                System.out.println(\"Generated Ticket and saved in DB\");\r\n                System.out.println(\"Please park your vehicle in spot number:\" + parkingSpot.getId());\r\n                System.out.println(\"Recorded in-time for vehicle number:\" + vehicleRegNumber + \" is:\" + inTime);\r\n\r\n                // Print a message based on whether it's a returning customer or not\r\n                if (isReturningCustomer) {\r\n                    System.out.println(\"Welcome back! You are recognized as a returning customer.\");\r\n                } else {\r\n                    System.out.println(\"Welcome! You are a new customer.\");\r\n                }\r\n            }\r\n        } catch (Exception e) {\r\n            logger.error(\"Unable to process incoming vehicle\", e);\r\n        }\r\n    }\r\n\r\n\r\n    private String getVehichleRegNumber() throws Exception {\r\n        System.out.println(\"Please type the vehicle registration number and press enter key\");\r\n        return inputReaderUtil.readVehicleRegistrationNumber();\r\n    }\r\n\r\n    public ParkingSpot getNextParkingNumberIfAvailable(){\r\n        int parkingNumber=0;\r\n        ParkingSpot parkingSpot = null;\r\n        try{\r\n            ParkingType parkingType = getVehichleType();\r\n            parkingNumber = parkingSpotDAO.getNextAvailableSlot(parkingType);\r\n            if(parkingNumber > 0){\r\n                parkingSpot = new ParkingSpot(parkingNumber,parkingType, true);\r\n            }else{\r\n                throw new Exception(\"Error fetching parking number from DB. Parking slots might be full\");\r\n            }\r\n        }catch(IllegalArgumentException ie){\r\n            logger.error(\"Error parsing user input for type of vehicle\", ie);\r\n        }catch(Exception e){\r\n            logger.error(\"Error fetching next available parking slot\", e);\r\n        }\r\n        return parkingSpot;\r\n    }\r\n\r\n    private ParkingType getVehichleType(){\r\n        System.out.println(\"Please select vehicle type from menu\");\r\n        System.out.println(\"1 CAR\");\r\n        System.out.println(\"2 BIKE\");\r\n        int input = inputReaderUtil.readSelection();\r\n        switch(input){\r\n            case 1: {\r\n                return ParkingType.CAR;\r\n            }\r\n            case 2: {\r\n                return ParkingType.BIKE;\r\n            }\r\n            default: {\r\n                System.out.println(\"Incorrect input provided\");\r\n                throw new IllegalArgumentException(\"Entered input is invalid\");\r\n            }\r\n        }\r\n    }\r\n\r\n    public void processExitingVehicle() {\r\n        try {\r\n            String vehicleRegNumber = getVehichleRegNumber();\r\n            boolean isReturningCustomer = customerDAO.isReturningCustomer(vehicleRegNumber);\r\n            Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);\r\n            Date outTime = new Date();\r\n            ticket.setOutTime(outTime);\r\n\r\n            // Pass the isReturningCustomer flag to calculate the fare correctly\r\n            fareCalculatorService.calculateFare(ticket, isReturningCustomer);\r\n\r\n            ticketDAO.updateTicket(ticket);\r\n\r\n            ParkingSpot parkingSpot = ticket.getParkingSpot();\r\n            parkingSpot.setAvailable(true);\r\n            parkingSpotDAO.updateParking(parkingSpot);\r\n\r\n            System.out.println(\"Please pay the parking fare: \" + ticket.getPrice());\r\n            System.out.println(\"Recorded out-time for vehicle number: \" + ticket.getVehicleRegNumber()\r\n                    + \" is:\" + outTime);\r\n        } catch (Exception e) {\r\n            logger.error(\"Unable to process exiting vehicle\", e);\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/parkit/parkingsystem/service/ParkingService.java b/src/main/java/com/parkit/parkingsystem/service/ParkingService.java
+--- a/src/main/java/com/parkit/parkingsystem/service/ParkingService.java	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ b/src/main/java/com/parkit/parkingsystem/service/ParkingService.java	(date 1686742825421)
+@@ -1,9 +1,9 @@
+ package com.parkit.parkingsystem.service;
+ 
+ import com.parkit.parkingsystem.constants.ParkingType;
++import com.parkit.parkingsystem.dao.CustomerDAO;
+ import com.parkit.parkingsystem.dao.ParkingSpotDAO;
+ import com.parkit.parkingsystem.dao.TicketDAO;
+-import com.parkit.parkingsystem.dao.CustomerDAO;
+ import com.parkit.parkingsystem.model.ParkingSpot;
+ import com.parkit.parkingsystem.model.Ticket;
+ import com.parkit.parkingsystem.util.InputReaderUtil;
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+deleted file mode 100644
+--- a/.idea/vcs.xml	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ /dev/null	(revision 4141a5abb06022e47f0782837489ced9b9297414)
+@@ -1,6 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="VcsDirectoryMappings">
+-    <mapping directory="" vcs="Git" />
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/encodings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/encodings.xml b/.idea/encodings.xml
+deleted file mode 100644
+--- a/.idea/encodings.xml	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ /dev/null	(revision 4141a5abb06022e47f0782837489ced9b9297414)
+@@ -1,7 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="Encoding">
+-    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+-    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/.gitignore
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+deleted file mode 100644
+--- a/.idea/.gitignore	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ /dev/null	(revision 4141a5abb06022e47f0782837489ced9b9297414)
+@@ -1,3 +0,0 @@
+-# Default ignored files
+-/shelf/
+-/workspace.xml
+Index: .idea/jarRepositories.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/jarRepositories.xml b/.idea/jarRepositories.xml
+deleted file mode 100644
+--- a/.idea/jarRepositories.xml	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ /dev/null	(revision 4141a5abb06022e47f0782837489ced9b9297414)
+@@ -1,20 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="RemoteRepositoriesConfiguration">
+-    <remote-repository>
+-      <option name="id" value="central" />
+-      <option name="name" value="Central Repository" />
+-      <option name="url" value="https://repo.maven.apache.org/maven2" />
+-    </remote-repository>
+-    <remote-repository>
+-      <option name="id" value="central" />
+-      <option name="name" value="Maven Central repository" />
+-      <option name="url" value="https://repo1.maven.org/maven2" />
+-    </remote-repository>
+-    <remote-repository>
+-      <option name="id" value="jboss.community" />
+-      <option name="name" value="JBoss Community repository" />
+-      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+-    </remote-repository>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/compiler.xml b/.idea/compiler.xml
+deleted file mode 100644
+--- a/.idea/compiler.xml	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ /dev/null	(revision 4141a5abb06022e47f0782837489ced9b9297414)
+@@ -1,13 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="CompilerConfiguration">
+-    <annotationProcessing>
+-      <profile name="Maven default annotation processors profile" enabled="true">
+-        <sourceOutputDir name="target/generated-sources/annotations" />
+-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+-        <outputRelativeToContentRoot value="true" />
+-        <module name="parking-system" />
+-      </profile>
+-    </annotationProcessing>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+deleted file mode 100644
+--- a/.idea/misc.xml	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ /dev/null	(revision 4141a5abb06022e47f0782837489ced9b9297414)
+@@ -1,12 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="ExternalStorageConfigurationManager" enabled="true" />
+-  <component name="MavenProjectsManager">
+-    <option name="originalFiles">
+-      <list>
+-        <option value="$PROJECT_DIR$/pom.xml" />
+-      </list>
+-    </option>
+-  </component>
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_20" default="true" project-jdk-name="20" project-jdk-type="JavaSDK" />
+-</project>
+\ No newline at end of file
+Index: .idea/checkstyle-idea.xml
+===================================================================
+diff --git a/.idea/checkstyle-idea.xml b/.idea/checkstyle-idea.xml
+deleted file mode 100644
+--- a/.idea/checkstyle-idea.xml	(revision 4141a5abb06022e47f0782837489ced9b9297414)
++++ /dev/null	(revision 4141a5abb06022e47f0782837489ced9b9297414)
+@@ -1,16 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="CheckStyle-IDEA" serialisationVersion="2">
+-    <checkstyleVersion>10.12.0</checkstyleVersion>
+-    <scanScope>JavaOnly</scanScope>
+-    <copyLibs>true</copyLibs>
+-    <option name="thirdPartyClasspath" />
+-    <option name="activeLocationIds" />
+-    <option name="locations">
+-      <list>
+-        <ConfigurationLocation id="bundled-sun-checks" type="BUNDLED" scope="All" description="Sun Checks">(bundled)</ConfigurationLocation>
+-        <ConfigurationLocation id="bundled-google-checks" type="BUNDLED" scope="All" description="Google Checks">(bundled)</ConfigurationLocation>
+-      </list>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
