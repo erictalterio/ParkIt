@@ -113,7 +113,6 @@ public class ParkingService {
     public void processExitingVehicle() {
         try {
             String vehicleRegNumber = getVehichleRegNumber();
-            boolean isReturningCustomer = customerDAO.isReturningCustomer(vehicleRegNumber);
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
             ticket.setOutTime(outTime);

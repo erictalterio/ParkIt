@@ -8,7 +8,6 @@ import com.parkit.parkingsystem.service.FareCalculatorService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.parkit.parkingsystem.constants.Fare;
 import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
