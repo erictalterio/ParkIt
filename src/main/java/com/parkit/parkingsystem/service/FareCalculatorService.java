@@ -31,7 +31,7 @@ public class FareCalculatorService {
                     fare = 0;
                 } else {
                     // Apply regular rate
-                    int billingMinutes = durationMinutes - Fare.FREE_DURATION_CAR;
+                    int billingMinutes = durationMinutes - Fare.FREE_DURATION_CAR + Fare.FREE_DURATION_CAR;
                     fare = billingMinutes * Fare.CAR_RATE_PER_MINUTE;
                 }
 
@@ -50,7 +50,7 @@ public class FareCalculatorService {
                     fare = 0;
                 } else {
                     // Apply regular rate
-                    int billingMinutes = durationMinutes - Fare.FREE_DURATION_BIKE;
+                    int billingMinutes = durationMinutes - Fare.FREE_DURATION_BIKE + Fare.FREE_DURATION_BIKE;
                     fare = billingMinutes * Fare.BIKE_RATE_PER_MINUTE;
                 }
 
