@@ -24,7 +24,7 @@ public class ParkingDataBaseIT {
 
     // This method is executed before each test method
     @BeforeEach
-    public static void setUp() {
+    public void setUp() {
         // Create a new instance of ParkingSpotDAO
         parkingSpotDAO = new ParkingSpotDAO();
         // Create a mock instance of DataBaseConfig
