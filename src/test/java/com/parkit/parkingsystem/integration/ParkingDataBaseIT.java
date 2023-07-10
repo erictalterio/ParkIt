@@ -19,7 +19,7 @@ import java.sql.ResultSet;
 public class ParkingDataBaseIT {
 
     // Declare variables for ParkingSpotDAO and DataBaseConfig
-    private static ParkingSpotDAO parkingSpotDAO;
+    private ParkingSpotDAO parkingSpotDAO;
     private static DataBaseConfig dataBaseConfig;
 
     // This method is executed before each test method
